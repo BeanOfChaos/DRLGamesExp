@@ -2,12 +2,12 @@ import gym
 import tensorflow.keras.layers as kl
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.backend import clear_session
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-BATCH_SIZE = 100
+BATCH_SIZE = 1024
 MAXIT = 1000
 ACTIONS = np.arange(0, 9, 1)
 DISCOUNT = 1
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     model.add(kl.Dense(256))
     model.add(kl.Dense(len(ACTIONS)))
 
-    opt = Adam(lr=0.005)
+    opt = Adam(lr=0.05)
     model.compile(optimizer=opt, loss='mse')
     model.summary()
 
@@ -67,8 +67,12 @@ if __name__ == "__main__":
                     ys.append(tmp)
 
                 model.train_on_batch(np.concatenate(xs), np.asarray(ys))
+                clear_session()
                 history = []
-        ep_rewards.append(sum(current_it_rewards))
+        tmp = sum(current_it_rewards)
+        print(f"Episode total reward: {tmp}")
+        ep_rewards.append(tmp)
+
     plt.plot(ep_rewards)
     plt.xlabel("Episode")
     plt.ylabel("Reward")
