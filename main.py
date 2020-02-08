@@ -6,14 +6,17 @@ from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 BATCH_SIZE = 100
 MAXIT = 1000
 ACTIONS = np.arange(0, 9, 1)
 DISCOUNT = 1
 
 if __name__ == "__main__":
+    print("")
     env = gym.make('MsPacman-v0')
 
+    print("Creating model.")
     model = Sequential()
     model.add(kl.Reshape((210, 160, 3), input_shape=(210, 160, 3)))
     model.add(kl.Conv2D(filters=8, kernel_size=2, strides=2))
@@ -31,24 +34,29 @@ if __name__ == "__main__":
     ep_rewards = []
     history = []
     for i in range(MAXIT):
+        print(f"\nIteration number {i}")
         expl_prob = np.exp(- 8 * i / MAXIT)
+        print(f"Random action with probability {expl_prob}")
         current_it_rewards = []
         done = False
         new_obs = env.reset().astype(np.float16)
         new_obs = new_obs.reshape(1, *new_obs.shape)
         while not done:
             obs = new_obs
-            env.render()
+            # uncomment to show bot playing
+            # env.render()
             estimate = model.predict(obs).flatten()
             if np.random.random() < expl_prob:
                 action = np.random.choice(ACTIONS)
             else:
                 action = ACTIONS[np.argmax(estimate)]
             new_obs, reward, done, info = env.step(action)
+            current_it_rewards.append(reward)
             new_obs = new_obs.astype(np.float16).reshape(1, *new_obs.shape)
             history.append((new_obs, obs, action, reward, estimate))
 
             if len(history) == BATCH_SIZE:
+                print(f"History full, training...")
                 xs, ys = [], []
                 for i, step in enumerate(history):
                     new_obs, obs, action, reward, estimate = step
@@ -60,7 +68,9 @@ if __name__ == "__main__":
 
                 model.train_on_batch(np.concatenate(xs), np.asarray(ys))
                 history = []
-
+        ep_rewards.append(sum(current_it_rewards))
     plt.plot(ep_rewards)
-    plt.show()
-    
+    plt.xlabel("Episode")
+    plt.ylabel("Reward")
+    plt.grid = True
+    plt.savefig("reward_over_time.png")
