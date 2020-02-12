@@ -46,6 +46,7 @@ if __name__ == "__main__":
             # uncomment to show bot playing
             # env.render()
             estimate = model.predict(obs).flatten()
+            clear_session()
             if np.random.random() < expl_prob:
                 action = np.random.choice(ACTIONS)
             else:
@@ -65,14 +66,13 @@ if __name__ == "__main__":
                         max(model.predict(new_obs).flatten())
                     xs.append(obs)
                     ys.append(tmp)
-
+                print("Resuming exploration.")
                 model.train_on_batch(np.concatenate(xs), np.asarray(ys))
-                clear_session()
                 history = []
         tmp = sum(current_it_rewards)
         print(f"Episode total reward: {tmp}")
         ep_rewards.append(tmp)
-
+    model.save("pacman_model.json")
     plt.plot(ep_rewards)
     plt.xlabel("Episode")
     plt.ylabel("Reward")

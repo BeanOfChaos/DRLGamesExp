@@ -1,2 +1,2 @@
 # DRLGamesExp
-Experiments for deep reinforcement learning in games
+Experiments for deep reinforcement learning in games (pacman only for now)
