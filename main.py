@@ -3,6 +3,7 @@ import tensorflow.keras.layers as kl
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.backend import clear_session
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,11 +13,12 @@ MAXIT = 1000
 ACTIONS = np.arange(0, 9, 1)
 DISCOUNT = 1
 
+
 if __name__ == "__main__":
-    print("")
+    sys.stdout.write("\n")
     env = gym.make('MsPacman-v0')
 
-    print("Creating model.")
+    sys.stdout.write("Creating model.\n")
     model = Sequential()
     model.add(kl.Reshape((210, 160, 3), input_shape=(210, 160, 3)))
     model.add(kl.Conv2D(filters=8, kernel_size=2, strides=2))
@@ -34,9 +36,9 @@ if __name__ == "__main__":
     ep_rewards = []
     history = []
     for i in range(MAXIT):
-        print(f"\nIteration number {i}")
+        sys.stdout.write(f"\nIteration number {i}\n")
         expl_prob = np.exp(- 8 * i / MAXIT)
-        print(f"Random action with probability {expl_prob}")
+        sys.stdout.write(f"Random action with probability {expl_prob}\n")
         current_it_rewards = []
         done = False
         new_obs = env.reset().astype(np.float16)
@@ -57,7 +59,7 @@ if __name__ == "__main__":
             history.append((new_obs, obs, action, reward, estimate))
 
             if len(history) == BATCH_SIZE:
-                print(f"History full, training...")
+                sys.stdout.write(f"History full, training...\n")
                 xs, ys = [], []
                 for i, step in enumerate(history):
                     new_obs, obs, action, reward, estimate = step
@@ -66,11 +68,11 @@ if __name__ == "__main__":
                         max(model.predict(new_obs).flatten())
                     xs.append(obs)
                     ys.append(tmp)
-                print("Resuming exploration.")
+                sys.stdout.write("Resuming exploration.\n")
                 model.train_on_batch(np.concatenate(xs), np.asarray(ys))
                 history = []
         tmp = sum(current_it_rewards)
-        print(f"Episode total reward: {tmp}")
+        sys.stdout.write(f"Episode total reward: {tmp}\n")
         ep_rewards.append(tmp)
     model.save("pacman_model.json")
     plt.plot(ep_rewards)
